@@ -6,7 +6,14 @@ export const unpkgPathPlugin = () => {
     setup(build: esbuild.PluginBuild) {
       build.onResolve({ filter: /.*/ }, async (args: any) => {
         console.log('onResole', args);
-        return { path: args.path, namespace: 'a' };
+        if (args.path === 'index.js') {
+          return { path: args.path, namespace: 'a' };
+        } else if (args.path === 'tiny-test-pkg') {
+          return {
+            path: 'https://unpkg.com/tiny-test-pkg@1.0.0/index.js',
+            namespace: 'b',
+          };
+        }
       });
 
       build.onLoad({ filter: /.*/ }, async (args: any) => {
@@ -16,14 +23,9 @@ export const unpkgPathPlugin = () => {
           return {
             loader: 'jsx',
             contents: `
-              import message from './message';
+              import message from 'tiny-test-pkg';
               console.log(message);
             `,
-          };
-        } else {
-          return {
-            loader: 'jsx',
-            contents: 'export default "hi there!"',
           };
         }
       });
