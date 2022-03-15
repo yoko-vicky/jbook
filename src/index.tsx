@@ -47,6 +47,7 @@ const App = () => {
   // iframeにsrcDocとして送信する内容（iframe内に描画されるcode）
   // script内の内容: messageが発生したら(postMessage)、
   // そのdata（postMessageから受け取ったデータ）を評価し実行せよ
+  // もしうまくいかなかったら、rootにエラーメッセージを表示
   const html = `
   <html>
     <head></head>
@@ -54,7 +55,13 @@ const App = () => {
       <div id="root"></div>
       <script>
         window.addEventListener('message', (event)=>{
-          eval(event.data);
+          try{
+            eval(event.data);
+          } catch(err){
+            const root = document.querySelector('#root');
+            root.innerHTML = '<div style="color: red;"><h4>Runtime Error</h4> ' + err + '</div>';
+            console.error(err);
+          }
         }, false);
       </script>
     </body>
