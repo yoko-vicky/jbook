@@ -27,6 +27,9 @@ const App = () => {
     }
 
     // submitボタンがクリックされたら、
+    // 0. 毎回新しいコードのバンドルが実行される前に、iframe内（子）のコードをリセットする
+    iframe.current.srcdoc = html;
+
     // 1. esbuildを実行し
     const result = await ref.current.build({
       entryPoints: ['index.js'],
