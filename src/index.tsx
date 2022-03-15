@@ -6,6 +6,7 @@ import { fetchPlugin } from './plugins/fetch-plugin';
 
 const App = () => {
   const ref = useRef<any>();
+  const iframe = useRef<any>();
   const [input, setInput] = useState('');
   const [code, setCode] = useState('');
 
@@ -25,6 +26,8 @@ const App = () => {
       return;
     }
 
+    // submitボタンがクリックされたら、
+    // 1. esbuildを実行し
     const result = await ref.current.build({
       entryPoints: ['index.js'],
       bundle: true,
@@ -36,9 +39,32 @@ const App = () => {
       },
     });
 
-    // console.log(result);
-    setCode(result.outputFiles[0].text);
+    // 2. esbuild後の結果テキストをiframeのwindowにpostMessage(message event発生)し、
+    // buildしたコード(transpile後のコード)を送る=> eventの中のdataとして受け取れる
+    iframe.current.contentWindow.postMessage(result.outputFiles[0].text, '*');
   };
+
+  // iframeにsrcDocとして送信する内容（iframe内に描画されるcode）
+  // script内の内容: messageが発生したら(postMessage)、
+  // そのdata（postMessageから受け取ったデータ）を評価し実行せよ
+  const html = `
+  <html>
+    <head></head>
+    <body>
+      <div id="root"></div>
+      <script>
+        window.addEventListener('message', (event)=>{
+          eval(event.data);
+        }, false);
+      </script>
+    </body>
+  </html>
+`;
+
+  // sandboxは何も指定しないと親(iframeを表示する方)・子(iframeの中身)間で
+  // 自由にデータにアクセス可能 = デフォルト設定はsandobox="allow-same-origin"
+  // sandbox="" 空欄stringにするか、他の"allow-scripts"などを指定することで
+  // 親から子へのアクセスを制限する
   return (
     <div>
       <textarea
@@ -49,6 +75,7 @@ const App = () => {
         <button onClick={handleSubmit}>Submit</button>
       </div>
       <pre>{code}</pre>
+      <iframe ref={iframe} srcDoc={html} sandbox="allow-scripts"></iframe>
     </div>
   );
 };
