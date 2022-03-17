@@ -11,18 +11,18 @@ interface CodeEditorProps {
 const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, onChange }) => {
   const editorRef = useRef<any>();
 
-  const onEditorDidMount: EditorDidMount = async (getValue, monacoEditor) => {
-    editorRef.current = await monacoEditor;
+  const onEditorDidMount: EditorDidMount = (getValue, monacoEditor) => {
+    editorRef.current = monacoEditor;
     monacoEditor.onDidChangeModelContent(() => {
       onChange(getValue());
     });
-
     monacoEditor.getModel()?.updateOptions({ tabSize: 2 });
   };
 
-  const onFormatClick = async () => {
+  const onFormatClick = () => {
     //  get current value from editor
-    const unformatted = await editorRef.current.getModel().getValue();
+    const unformatted = editorRef.current.getModel().getValue();
+
     // format that value
     const formatted = prettier.format(unformatted, {
       parser: 'babel',
@@ -31,6 +31,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, onChange }) => {
       semi: true,
       singleQuote: true,
     });
+
     // set the formatted value back in the editor
     editorRef.current.setValue(formatted);
   };
