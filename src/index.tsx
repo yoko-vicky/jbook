@@ -1,3 +1,4 @@
+import 'bulmaswatch/superhero/bulmaswatch.min.css';
 import * as esbuild from 'esbuild-wasm';
 import { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
@@ -26,11 +27,8 @@ const App = () => {
       return;
     }
 
-    // submitボタンがクリックされたら、
-    // 0. 毎回新しいコードのバンドルが実行される前に、iframe内（子）のコードをリセットする
     iframe.current.srcdoc = html;
 
-    // 1. esbuildを実行し
     const result = await ref.current.build({
       entryPoints: ['index.js'],
       bundle: true,
@@ -42,15 +40,9 @@ const App = () => {
       },
     });
 
-    // 2. esbuild後の結果テキストをiframeのwindowにpostMessage(message event発生)し、
-    // buildしたコード(transpile後のコード)を送る=> eventの中のdataとして受け取れる
     iframe.current.contentWindow.postMessage(result.outputFiles[0].text, '*');
   };
 
-  // iframeにsrcDocとして送信する内容（iframe内に描画されるcode）
-  // script内の内容: messageが発生したら(postMessage)、
-  // そのdata（postMessageから受け取ったデータ）を評価し実行せよ
-  // もしうまくいかなかったら、rootにエラーメッセージを表示
   const html = `
   <html>
     <head></head>
@@ -71,10 +63,6 @@ const App = () => {
   </html>
 `;
 
-  // sandboxは何も指定しないと親(iframeを表示する方)・子(iframeの中身)間で
-  // 自由にデータにアクセス可能 = デフォルト設定はsandobox="allow-same-origin"
-  // sandbox="" 空欄stringにするか、他の"allow-scripts"などを指定することで
-  // 親から子へのアクセスを制限する
   return (
     <div>
       <CodeEditor
