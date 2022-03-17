@@ -77,7 +77,10 @@ const App = () => {
   // 親から子へのアクセスを制限する
   return (
     <div>
-      <CodeEditor />
+      <CodeEditor
+        initialValue="const b = 1;"
+        onChange={(value) => setInput(value)}
+      />
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
